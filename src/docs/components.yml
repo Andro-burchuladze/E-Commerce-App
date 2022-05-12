@@ -1,0 +1,191 @@
+# *******************Components*******************
+components:
+  # ********Schemes********
+  schemas:
+    # ********User********
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+        mobileNumber:
+          type: string
+          pattern: (0|\+98)?([ ]|,|-|[()]){0,2}9[1|2|3|4]([ ]|,|-|[()]){0,2}(?:[0-9]([ ]|,|-|[()]){0,2}){8}
+        email:
+          type: string
+          format: email
+        firstname:
+          type: string
+          maxLength: 46
+        lastname:
+          type: string
+          maxLength: 46
+        role:
+          type: string
+          enum: [user, admin]
+        isMobileNumberVerified:
+          type: boolean
+        isEmailVerified:
+          type: boolean
+        avatar:
+          type: string
+        phoneNumber:
+          type: string
+          patern: ^0[0-9]{2,}[0-9]{7,}$
+        address:
+          type: object
+          properties:
+            country:
+              type: string
+              maxlength: 30
+            province:
+              type: string
+              maxlength: 35
+            city:
+              type: string
+              maxlength: 35
+            street:
+              type: string
+              maxlength: 35
+            zipCode:
+              type: string
+              length: 10
+
+      example:
+        id: 5ebac534954b54139806c112
+        mobileNumber: "09175555555"
+        email: andro@yahoo.com
+        firstname: "Andro"
+        lastname: "Burchuladze"
+        role: user
+        isMobileNumberVerified: false
+        isEmailVerified: false
+        avatar: path/.....
+        phoneNumber: "05552122555"
+        address:
+          country: "Gorgia"
+
+    # ********Token********
+    Token:
+      type: object
+      properties:
+        token:
+          type: string
+        expires:
+          type: string
+          format: date-time
+      example:
+        token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI1ZWJhYzUzNDk1NGI1NDEzOTgwNmMxMTIiLCJpYXQiOjE1ODkyOTg0ODQsImV4cCI6MTU4OTMwMDI4NH0.m1U63blB0MLej_WfB7yC2FTMnCziif9X8yzwDEfJXAg
+        expires: 2022-05-12T16:18:04.793Z
+
+    # ********Auth Tokens********
+    AuthTokens:
+      type: object
+      properties:
+        access:
+          $ref: "#/components/schemas/Token"
+        refresh:
+          $ref: "#/components/schemas/Token"
+
+    # ********Error********
+    Error:
+      type: object
+      properties:
+        code:
+          type: number
+        message:
+          type: string
+
+  # ********Responses********
+  responses:
+    # ********User********
+    User:
+      description: User
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/User"
+    # ********Register with mobile number********
+    registerWithMobileNumber:
+      type: object
+      properties:
+        id:
+          type: string
+        mobileNumber:
+          type: string
+          pattern: (0|\+98)?([ ]|,|-|[()]){0,2}9[1|2|3|4]([ ]|,|-|[()]){0,2}(?:[0-9]([ ]|,|-|[()]){0,2}){8}
+        role:
+          type: string
+          enum: [user, admin]
+        isMobileNumberVerified:
+          type: boolean
+      example:
+        id: 5ebac534954b54139806c112
+        mobileNumber: "09175555555"
+        role: user
+        isMobileNumberVerified: false
+    # ********Register with email********
+    registerWithEmail:
+      type: object
+      properties:
+        id:
+          type: string
+        email:
+          type: string
+          format: email
+        role:
+          type: string
+          enum: [user, admin]
+        isEmailVerified:
+          type: boolean
+      example:
+        id: 5ebac534954b54139806c112
+        email: andro@rocketmail.com
+        role: user
+        isEmailVerified: false
+    # ********400********
+    BadRequest:
+      description: Bad Request
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            code: 400
+            message: Bad Request
+    # ********401********
+    Unauthorized:
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            code: 401
+            message: Please authenticate
+    # ********403********
+    Forbidden:
+      description: Forbidden
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            code: 403
+            message: Forbidden
+    # ********404********
+    NotFound:
+      description: Not found
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            code: 404
+            message: Not found
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

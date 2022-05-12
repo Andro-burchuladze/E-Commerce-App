@@ -1,0 +1,317 @@
+paths:
+  /v1/auth/register:
+    post:
+      tags:
+        - [Auth]
+      summary: Register as user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - mobileNumberOrEmail
+                - password
+              properties:
+                mobileNumberOrEmail:
+                  type: string
+                  unique: true
+                password:
+                  type: string
+                  format: password
+                  minLength: 8
+                  description: at least one capital letter, one special character and one number
+            example:
+              mobileNumberOrEmail: "09175555555"
+              password: Pass**11
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: "#/components/responses/registerWithMobileNumber"
+                  - $ref: "#/components/responses/registerWithEmail"
+        "400":
+          description: Bad Request
+          $ref: "#/components/responses/BadRequest"
+  /v1/auth/send-verification:
+    post:
+      tags:
+        - [Auth]
+      summary: send sms(email) verification
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - mobileNumberOrEmail
+              properties:
+                mobileNumberOrEmail:
+                  type: string
+            example:
+              mobileNumberOrEmail: "09175555555"
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          $ref: "#/components/responses/BadRequest"
+        "404":
+          description: Not found
+          $ref: "#/components/responses/NotFound"
+
+  /v1/auth/verify-mobile-number:
+    post:
+      tags:
+        - [Auth]
+      summary: verify user mobile number
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - mobileNumber:
+                    type: string
+                - token:
+                    type: string
+              example:
+                mobileNumber: "09175555555"
+                token: "123456"
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          description: Unauthorized
+          $ref: "#/components/responses/Unauthorized"
+
+  /api/v1/auth/verify-email:
+    post:
+      summary: Verify email
+      tags:
+        - [Auth]
+      parameters:
+        - in: query
+          name: token
+          required: true
+          schema:
+            type: string
+          description: The verify email token
+      responses:
+        "204":
+          description: No content
+        "400":
+          description: Bad Request
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          description: Unauthorized
+          $ref: "#/components/responses/Unauthorized"
+
+  /v1/auth/login:
+    post:
+      tags:
+        - [Auth]
+      summary: login user with mobile number(email) and password
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                mobileNumberOrEmail:
+                  type: string
+                password:
+                  type: string
+                  format: password
+                  minLength: 8
+                  description: at least one capital letter, one special character and one number
+              example:
+                mobileNumberOrEmail: "09175555555"
+                password: Pass**11
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user:
+                    $ref: "#/components/schemas/User"
+                  tokens:
+                    $ref: "#/components/schemas/AuthTokens"
+        "400":
+          description: Bad Request
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          description: Unauthorized
+          $ref: "#/components/responses/Unauthorized"
+
+  /v1/auth/logout:
+    post:
+      tags:
+        - [Auth]
+      summary: logout user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                refreshToken:
+              example:
+                refreshToken: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI1ZWJhYzUzNDk1NGI1NDEzOTgwNmMxMTIiLCJpYXQiOjE1ODkyOTg0ODQsImV4cCI6MTU4OTMwMDI4NH0.m1U63blB0MLej_WfB7yC2FTMnCziif9X8yzwDEfJXAg
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          $ref: "#/components/responses/BadRequest"
+        "404":
+          description: Not found
+          $ref: "#/components/responses/NotFound"
+
+  /v1/auth/refresh-tokens:
+    post:
+      tags:
+        - [Auth]
+      summary: refresh auth tokens
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                refreshToken:
+              example:
+                refreshToken: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI1ZWJhYzUzNDk1NGI1NDEzOTgwNmMxMTIiLCJpYXQiOjE1ODkyOTg0ODQsImV4cCI6MTU4OTMwMDI4NH0.m1U63blB0MLej_WfB7yC2FTMnCziif9X8yzwDEfJXAg
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthTokens"
+        "400":
+          description: Bad Request
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          description: Unauthorized
+          $ref: "#/components/responses/Unauthorized"
+
+  /v1/auth/forgot-password:
+    post:
+      tags:
+        - [Auth]
+      summary: forgot password
+      description: A sms(email) will be sent to reset password.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                mobileNumberOrEmail:
+                  type: string
+              example:
+                mobileNumberOrEmail: "09175555555"
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          $ref: "#/components/responses/BadRequest"
+        "404":
+          description: Not found
+          $ref: "#/components/responses/NotFound"
+
+  /v1/auth/verify-mobile-number-for-reset-password:
+    post:
+      tags:
+        - [Auth]
+      summary: verify user mobile number for reset password
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - mobileNumber:
+                    type: string
+                - token:
+                    type: string
+              example:
+                mobileNumber: "09175555555"
+                token: "123456"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  resetPasswordToken:
+                    type: string
+        "400":
+          description: Bad Request
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          description: Unauthorized
+          $ref: "#/components/responses/Unauthorized"
+  /v1/auth/reset-password:
+    post:
+      summary: Reset password
+      tags:
+        - [Auth]
+      parameters:
+        - in: query
+          name: token
+          required: true
+          schema:
+            type: string
+          description: The reset password token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - mobileNumberOrEmail
+                - password
+              properties:
+                mobileNumberOrEmail:
+                  type: string
+                  description: you can send 0 or 1 for this filed. 0 stands for mobile number and 1 stands for email.
+                password:
+                  type: string
+                  format: password
+                  minLength: 8
+                  description: At least one number and one letter
+              example:
+                mobileNumberOrEmail: "0"
+                password: New100**
+      responses:
+        "204":
+          description: No content
+        "400":
+          description: Bad Request
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          description: Unauthorized
+          $ref: "#/components/responses/Unauthorized"
